@@ -19,9 +19,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FOOTER = [
   '',
   '📍 동성특수인쇄',
-  '· 위치(네이버 지도): [네이버 지도]',
-  '· 홈페이지: https://dongsp5771.imweb.me',
-  '· 문의/상담: [연락처]',
+  '· 위치(네이버 지도): https://naver.me/xk1Oro3N',
+  '· 전화: 02-2272-5771 · 휴대폰: 010-2793-3837',
+  // 홈페이지 정식 오픈 시 아래 줄 추가:
+  // '· 홈페이지: <정식 주소>',
 ].join('\n');
 
 const items = [];
