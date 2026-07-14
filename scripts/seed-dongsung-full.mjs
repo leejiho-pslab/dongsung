@@ -36,12 +36,14 @@ const blogItem = (prefix, channel, a) => {
 for (const a of NAVER) { items.push(blogItem('nv', 'naver-blog', a)); order++; }
 for (const a of GOOGLE) { items.push(blogItem('gb', 'blogger', a)); order++; }
 
-// 인스타 10
+// 인스타
 for (const g of INSTA) {
   items.push(base({
     id: g.id, topic: g.topic, format: g.format, channels: ['instagram'],
     kicker: g.kicker, headline: g.headline, sub: g.sub, motif: g.motif,
     variant: g.variant, captionBody: g.captionBody, captionNote: g.sub, rationale: g.kicker, slides: g.slides,
+    ...(g.igStyle ? { igStyle: g.igStyle } : {}),
+    ...(g.slidePhotos ? { slidePhotos: g.slidePhotos } : {}),
   }));
   order++;
 }

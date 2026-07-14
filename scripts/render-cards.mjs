@@ -248,8 +248,12 @@ if (!existsSync(planFile)) {
 }
 const plan = JSON.parse(readFileSync(planFile, 'utf8'));
 // 블로그(네이버·구글)는 세로 카드가 아니라 render-blog-images가 만드는 커버를 썸네일로 쓴다.
+// slidePhotos를 가진 인스타 항목은 이미지 전면형(render-ig.mjs)이 렌더하므로 여기서 제외.
 const BLOG_CH = ['naver-blog', 'blogger'];
-const items = (plan.items ?? []).filter((it) => it.headline && !(it.channels || []).every((c) => BLOG_CH.includes(c)));
+const items = (plan.items ?? []).filter((it) =>
+  it.headline &&
+  !(it.channels || []).every((c) => BLOG_CH.includes(c)) &&
+  !(Array.isArray(it.slidePhotos) && it.slidePhotos.length));
 if (items.length === 0) {
   console.log('렌더할 카드 항목(headline) 없음 — 건너뜀');
   process.exit(0);

@@ -128,6 +128,11 @@ jobs:
         continue-on-error: true
         run: node scripts/render-cards.mjs --client dongsung
 
+      # 이미지 전면형 인스타 렌더 (실사/AI 배경 위 한글 타이틀 오버레이 — slidePhotos 항목만)
+      - name: 인스타 이미지카드 렌더
+        continue-on-error: true
+        run: node scripts/render-ig.mjs --client dongsung
+
       # 블로그 본문 이미지 렌더 (네이버/구글 블로그 삽입용)
       - name: 블로그 이미지 렌더
         continue-on-error: true
