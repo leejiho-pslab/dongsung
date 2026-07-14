@@ -92,7 +92,7 @@ function slideHtml(s) {
 ${fontFaces()}
 ${BASE_CSS}
 body{background:${T.bg}}
-</style></head><body><div class="wrap">${slideInner(s)}</div><div class="brand">@_pslab</div></body></html>`;
+</style></head><body><div class="wrap">${slideInner(s)}</div><div class="brand">@dongsp5771</div></body></html>`;
 }
 
 // 투명 배경 오버레이(모션 영상 위에 합성용) — 텍스트 뒤 반투명 패널로 가독성 확보
@@ -105,7 +105,7 @@ body{background:transparent}
 .panel{width:100%;background:rgba(8,12,22,.58);border:1px solid rgba(255,255,255,.08);border-radius:44px;
   padding:80px 60px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
 .brand{color:#cdd6e8;text-shadow:0 2px 10px rgba(0,0,0,.6)}
-</style></head><body><div class="wrap"><div class="panel">${slideInner(s)}</div></div><div class="brand">@_pslab</div></body></html>`;
+</style></head><body><div class="wrap"><div class="panel">${slideInner(s)}</div></div><div class="brand">@dongsp5771</div></body></html>`;
 }
 
 const chromium = findChromium();

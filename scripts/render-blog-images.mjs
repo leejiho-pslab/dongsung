@@ -68,7 +68,7 @@ html,body{width:1600px;height:900px}
 </style></head><body><div class="cover"><div class="bar"></div>
   <div class="kicker">${esc(kicker)}</div>
   <div class="title">${esc(title)}</div>
-  <div class="brand">@_pslab</div>
+  <div class="brand">@dongsp5771</div>
 </div></body></html>`;
 }
 
@@ -118,7 +118,7 @@ function figureHtml(fig, t) {
   } else {
     inner = head(fig.kicker, fig.title || '');
   }
-  return `<div class="fig ${fig.type}">${inner}<div class="brand">@_pslab</div></div>`;
+  return `<div class="fig ${fig.type}">${inner}<div class="brand">@dongsp5771</div></div>`;
 }
 
 function pageHtml(fig, t) {
