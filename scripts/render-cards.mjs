@@ -247,7 +247,9 @@ if (!existsSync(planFile)) {
   process.exit(0);
 }
 const plan = JSON.parse(readFileSync(planFile, 'utf8'));
-const items = (plan.items ?? []).filter((it) => it.headline);
+// 블로그(네이버·구글)는 세로 카드가 아니라 render-blog-images가 만드는 커버를 썸네일로 쓴다.
+const BLOG_CH = ['naver-blog', 'blogger'];
+const items = (plan.items ?? []).filter((it) => it.headline && !(it.channels || []).every((c) => BLOG_CH.includes(c)));
 if (items.length === 0) {
   console.log('렌더할 카드 항목(headline) 없음 — 건너뜀');
   process.exit(0);

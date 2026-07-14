@@ -3,11 +3,13 @@
  *
  * 벤치마킹:
  *  - Planable/Buffer: 채널 탭 + 콘텐츠 캘린더(발행/대기) + 기획안 피드백
- *  - blogdex(블덱스): 네이버 블로그 "지수 등급" + 포스팅 전문성/연관성 점수 + 키워드 분석
+ *  - 네이버 검색 관심도: 네이버 데이터랩 실측 상대지수(keyword-trends.json)
  *
  * 클라이언트별 격리 저장소(이력/디자인/플랜)를 모아 자가완결형 HTML 한 장으로
  * 렌더한다. 데이터는 인라인 JSON으로 박고, 채널 탭 전환은 클라이언트 JS로 처리.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { ClientConfig, ClientStore } from './client.js';
 import type { CycleRecord } from './orchestrator.js';
 import type { DesignStore } from './design.js';
@@ -28,12 +30,6 @@ const CHANNELS: Array<{ key: PlatformId; label: string; icon: string }> = [
   { key: 'youtube', label: '유튜브', icon: '▶️' },
   { key: 'linkedin', label: '링크드인', icon: '💼' },
 ];
-
-function seed(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-  return h;
-}
 
 interface ChannelPublished {
   topic: string;
@@ -120,54 +116,21 @@ function buildChannel(
   };
 }
 
-const BLOG_TIERS = [
-  '저품질',
-  '일반',
-  '준최적화 1',
-  '준최적화 2',
-  '준최적화 3',
-  '최적화 1',
-  '최적화 2',
-  '최적화 3',
-];
-
-function buildBlog(client: ClientConfig, blogPublished: ChannelPublished[]) {
-  // 블덱스 스타일: 등급 + 포스팅별 전문성/연관성/품질 + 키워드 분석
-  const postCount = blogPublished.length;
-  const avgEng =
-    postCount > 0
-      ? blogPublished.reduce((a, p) => a + p.engagementRate, 0) / postCount
-      : 0;
-  const rawScore = Math.min(100, postCount * 9 + avgEng * 100 * 4);
-  const measured = postCount > 0;
-  const tierIdx = Math.min(
-    BLOG_TIERS.length - 1,
-    Math.floor((rawScore / 100) * BLOG_TIERS.length),
-  );
-  const posts = blogPublished.map((p) => {
-    const r = seed(`blog:${p.topic}`);
-    const base = 55 + (r % 35);
-    return {
-      topic: p.topic,
-      time: p.time,
-      expertise: Math.min(99, base + ((r >> 3) % 15)),
-      relevance: Math.min(99, base + ((r >> 6) % 18)),
-      quality: Math.min(99, Math.round((base + p.engagementRate * 100) % 100) || base),
-    };
-  });
-  const keywords = client.keywords.map((kw) => {
-    const r = seed(`kw:${kw}`);
-    const idx = 1000 + (r % 90000);
-    const comp = ['낮음', '보통', '높음'][r % 3];
-    return { kw, searchIndex: idx, competition: comp };
-  });
-  return {
-    measured,
-    grade: measured ? BLOG_TIERS[tierIdx] : '측정 전',
-    score: Math.round(rawScore),
-    posts,
-    keywords,
-  };
+function buildBlog(client: ClientConfig) {
+  // 네이버 데이터랩 실측 상대지수 (data/clients/<id>/keyword-trends.json)
+  let trends: { kw: string; index: number | null }[] = [];
+  let trendMeta = '';
+  try {
+    const base = process.env.PSLAB_DASH_DATADIR || 'data/clients';
+    const raw = JSON.parse(
+      readFileSync(join(base, client.id, 'keyword-trends.json'), 'utf8'),
+    ) as { source?: string; keywords?: { kw: string; index: number | null }[] };
+    trends = Array.isArray(raw.keywords) ? raw.keywords : [];
+    trendMeta = String(raw.source || '');
+  } catch {
+    /* 파일 없으면 빈 트렌드 */
+  }
+  return { trends, trendMeta };
 }
 
 function buildClientData(
@@ -242,8 +205,7 @@ function buildClientData(
     .map(toCard)
     .sort((a, b) => (a.scheduledFor || '').localeCompare(b.scheduledFor || ''));
 
-  const blogChannel = channels.find((c) => c.key === 'naver-blog')!;
-  const blog = buildBlog(client, blogChannel.published as ChannelPublished[]);
+  const blog = buildBlog(client);
 
   return {
     id: client.id,
@@ -667,12 +629,12 @@ function manualHelper(it, chDef){
   const coverImgs=(it.slideImages&&it.slideImages.length)?it.slideImages:(it.cardImage?[it.cardImage]:[]);
   const figImgs=(isNaver&&bodyImgs.length)?bodyImgs:coverImgs;
   const dls=figImgs.map((s,i)=>'<a class="btn" href="'+esc(imgv(s))+'" download="'+esc(it.id+'-img'+(i+1)+'.png')+'">⬇ 이미지'+(i+1)+'</a>').join('')
-    +(isNaver?'<a class="btn" href="'+esc(imgv('blog/'+it.id+'/cover.png'))+'" download="'+esc(it.id+'-대표이미지.png')+'" style="background:#e7effc;border-color:#b4cdf0;color:#2b5aa0">⬇ 대표이미지(가로)</a>':'');
+    +(isNaver?'<a class="btn" href="'+esc(imgv('blog/'+it.id+'/cover.png'))+'" download="'+esc(it.id+'-대표이미지.png')+'" style="background:#e7effc;border-color:#b4cdf0;color:#2b5aa0">⬇ 대표이미지(정사각)</a>':'');
   const isYt=chDef.key==='youtube';
   const hasVideo=isYt&&it.videoFile;
   const guide=isYt
     ? '쇼츠 영상을 다운로드해 업로드하고, 아래 SEO 제목·설명·태그를 그대로 복사해 넣으세요. (음악은 업로드 시 유튜브 무료 음악으로 추가)'
-    : '① “본문 전체 복사” → 네이버 글쓰기에 붙여넣기. ② 본문 속 [📷 이미지N] 자리마다 “이미지N”을 받아 그 위치에 삽입. ③ “대표이미지(가로)”를 받아 네이버 대표사진으로 지정(가로 16:9라 잘림·글자겹침 없음). ※ 네이버는 외부 이미지가 붙여넣기로 안 따라와 직접 삽입해야 합니다.';
+    : '① “본문 전체 복사” → 네이버 글쓰기에 붙여넣기. ② 본문 속 [📷 이미지N] 자리마다 “이미지N”을 받아 그 위치에 삽입. ③ “대표이미지(정사각)”를 받아 네이버 대표사진으로 지정(정사각 1:1이라 네이버 피드·검색 썸네일에 딱 맞음). ※ 네이버는 외부 이미지가 붙여넣기로 안 따라와 직접 삽입해야 합니다.';
   const videoBtn=hasVideo?'<a class="btn fb" href="'+esc(it.videoFile)+'" download="'+esc(it.id+'.mp4')+'" style="background:#fbeaf6;border-color:#e0b0d0;color:#a83a8a">🎬 쇼츠 영상 다운로드</a>':'';
   // 유튜브: SEO 업로드 패키지 (제목/설명/태그) 미리보기 + 개별 복사
   const ytPack=isYt&&(it.ytTitle||it.ytDescription)?(
@@ -778,7 +740,7 @@ function channelDetail(client, c){
   if(seriesF.length>1){h+='<div class="panel"><h3>반응도 추세 (참여율 %) · '+periodLabel()+'</h3>'+sparkline(seriesF.slice(-12))+'</div>';}
   // 발행 콘텐츠 데이터(성과 + 인사이트 코멘트) — 기간 반영
   h+=pubDataRows(planPubF);
-  // 네이버 블로그 → blogdex 스타일
+  // 네이버 블로그 → 네이버 검색 관심도(데이터랩 실측)
   if(c.key==='naver-blog'){ h+=blogSection(client); }
   // 발행 대기 (발행 전 콘텐츠만)
   h+='<div class="sect-h"><h2>🕓 발행 대기 콘텐츠 ('+waiting.length+')</h2></div>';
@@ -791,20 +753,17 @@ function channelDetail(client, c){
 }
 function blogSection(client){
   const b=client.blog;
-  const color = b.score>=70?'#e4f7ea':b.score>=40?'#fdf3e0':'#eef1f6';
-  const fg = b.score>=70?'#15803d':b.score>=40?'#b45309':'#5a6274';
-  let h='<div class="panel"><div class="sect-h" style="margin:0 0 10px"><h3>📊 블로그 지수 (blogdex 스타일)</h3><span class="muted">내부 추정 · 네이버 연동 시 실측 교체</span></div>';
-  h+='<div class="row"><div class="grade" style="background:'+color+';color:'+fg+'">'+esc(b.grade)+'</div>'+
-     '<div style="flex:1;min-width:160px"><div class="muted">종합 점수 '+b.score+'/100</div><div class="bar"><i style="width:'+b.score+'%"></i></div></div></div>';
-  // 포스팅 분석
-  if(b.posts.length){
-    h+='<table style="margin-top:12px"><tr><th>포스팅</th><th>전문성</th><th>연관성</th><th>품질</th></tr>'+
-      b.posts.slice(0,8).map(p=>'<tr><td>'+esc(p.topic)+'</td><td>'+p.expertise+'</td><td>'+p.relevance+'</td><td>'+p.quality+'</td></tr>').join('')+'</table>';
-  }
-  // 키워드 분석
-  h+='<table style="margin-top:12px"><tr><th>키워드</th><th>검색지수</th><th>경쟁도</th></tr>'+
-    b.keywords.map(k=>'<tr><td>#'+esc(k.kw)+'</td><td>'+k.searchIndex.toLocaleString()+'</td><td>'+esc(k.competition)+'</td></tr>').join('')+'</table>';
-  h+='</div>';
+  if(!b||!b.trends||!b.trends.length) return '';
+  const vals=b.trends.map(t=>t.index==null?0:t.index);
+  const max=Math.max.apply(null,[1].concat(vals));
+  let h='<div class="panel"><div class="sect-h" style="margin:0 0 10px"><h3>📊 네이버 검색 관심도</h3><span class="muted">'+esc(b.trendMeta||'네이버 데이터랩 · 상대지수')+'</span></div>';
+  h+='<table><tr><th>키워드</th><th>상대 관심도</th><th></th></tr>'+
+    b.trends.map(function(t){
+      var v=t.index==null?0:t.index;
+      var w=Math.round(v/max*100);
+      var disp=t.index==null?'데이터 부족':(t.index<1?'<1':String(t.index));
+      return '<tr><td>#'+esc(t.kw)+'</td><td>'+disp+'</td><td style="width:46%"><div class="bar"><i style="width:'+w+'%"></i></div></td></tr>';
+    }).join('')+'</table></div>';
   return h;
 }
 function tokenBanner(client){
