@@ -31,10 +31,16 @@ function findChromium() {
 const FONT_WEIGHTS = { ExtraBold: 800, Bold: 700, SemiBold: 600, Medium: 500, Regular: 400 };
 function fontFaces() {
   const dir = join(ROOT, 'assets/fonts');
-  return Object.entries(FONT_WEIGHTS).map(([w, weight]) => {
+  const pre = Object.entries(FONT_WEIGHTS).map(([w, weight]) => {
     const b64 = readFileSync(join(dir, `Pretendard-${w}.otf`)).toString('base64');
     return `@font-face{font-family:'Pretendard';font-weight:${weight};src:url(data:font/otf;base64,${b64}) format('opentype');}`;
-  }).join('\n');
+  });
+  // 명조(세리프) 디스플레이 — 럭셔리 에디토리얼 감. 제목 전용.
+  const serif = [['Bold', 700], ['ExtraBold', 800]].map(([w, weight]) => {
+    const b64 = readFileSync(join(dir, `NanumMyeongjo-${w}.woff2`)).toString('base64');
+    return `@font-face{font-family:'Myeongjo';font-weight:${weight};src:url(data:font/woff2;base64,${b64}) format('woff2');}`;
+  });
+  return [...pre, ...serif].join('\n');
 }
 const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const hl = (s) => esc(s).replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br>');
@@ -53,61 +59,63 @@ async function dl(url) {
 // ⚠️ 헤드리스 크로미움은 하단 ~110px가 캡처에서 잘린다(윈도우 높이≠가용 높이).
 //    그래서 모든 하단 텍스트는 flex-end + padding-bottom:135(세이프존) 안에 둔다.
 const SAFE_B = 135;
+// 통일 팔레트: Ink(딥네이비)·Ivory·Gold·Signal(레드)·Mist. 명조 디스플레이 + Pretendard 라벨/본문.
 function styleCSS(faces) {
   return `${faces}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty}
-html,body{width:1080px;height:1350px;font-family:'Pretendard';background:#08101c}
-.card{width:1080px;height:1350px;position:relative;overflow:hidden;background:#0c1220;color:#fff}
+:root{--ink:#0c1526;--ivory:#f4efe6;--gold:#c9a86a;--gold-d:#b8923f;--signal:#e2503f;--mist:#9fb0c6}
+html,body{width:1080px;height:1350px;font-family:'Pretendard';background:#0a1220}
+.card{width:1080px;height:1350px;position:relative;overflow:hidden;background:var(--ink);color:var(--ivory)}
 .bg{position:absolute;inset:0;background-size:cover;background-position:center}
-.stage{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:0 64px ${SAFE_B}px}
+.stage{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:0 96px ${SAFE_B}px}
 `;
 }
 
-// cinema: 영화 스틸 느낌. 하단 큰 그라데이션 + 굵은 흰 타이틀(좌하단) + 얇은 라인.
+// Editorial: 무드/언박싱. 전면 사진 + 딥네이비 스크림 + 명조 대형 아이보리 제목 + 골드 라벨·헤어라인.
 function cinemaHTML(photoB64, title, sub, faces) {
-  const bg = photoB64 ? `background-image:url(data:image/png;base64,${photoB64})` : 'background:linear-gradient(135deg,#111a2c,#0a0f1a)';
+  const bg = photoB64 ? `background-image:url(data:image/png;base64,${photoB64})` : 'background:linear-gradient(140deg,#16233c,#0a1220)';
   return `<!doctype html><html><head><meta charset="utf-8"><style>${styleCSS(faces)}
-.scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,9,16,.15) 0%,rgba(6,9,16,.05) 42%,rgba(6,9,16,.72) 76%,rgba(6,9,16,.95) 100%)}
-.sub{font-weight:600;font-size:34px;letter-spacing:.02em;color:#e7ecf5;opacity:.9;margin-bottom:20px;text-shadow:0 2px 12px rgba(0,0,0,.7)}
-.title{font-weight:800;font-size:92px;line-height:1.16;letter-spacing:-.03em;text-shadow:0 4px 28px rgba(0,0,0,.85)}
-.title em{color:#ffd27a;font-style:normal}
-.brandmark{margin-top:30px;padding-top:26px;border-top:2px solid rgba(255,255,255,.28);font-weight:800;font-size:34px;letter-spacing:.02em;color:#fff;opacity:.95;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,14,26,.10) 0%,rgba(8,14,26,.04) 40%,rgba(8,14,26,.64) 74%,rgba(8,14,26,.95) 100%)}
+.label{font-weight:600;font-size:27px;letter-spacing:.30em;color:var(--gold);text-transform:uppercase;margin-bottom:26px;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+.title{font-family:'Myeongjo';font-weight:800;font-size:90px;line-height:1.2;letter-spacing:-.01em;color:var(--ivory);text-shadow:0 4px 26px rgba(0,0,0,.7)}
+.title em{color:var(--gold);font-style:normal}
+.brand{margin-top:34px;padding-top:26px;border-top:1.5px solid rgba(201,168,106,.5);font-weight:700;font-size:30px;letter-spacing:.04em;color:rgba(244,239,230,.9)}
 </style></head><body><div class="card"><div class="bg" style="${bg}"></div><div class="scrim"></div>
-<div class="stage">${sub ? `<div class="sub">${esc(sub)}</div>` : ''}<div class="title">${hl(title)}</div><div class="brandmark">@dongsp5771</div></div></div></body></html>`;
+<div class="stage">${sub ? `<div class="label">${esc(sub)}</div>` : ''}<div class="title">${hl(title)}</div><div class="brand">@dongsp5771 · 동성특수인쇄</div></div></div></body></html>`;
 }
 
-// photoA: 실사 카드. 상단 레드 액센트 바 + 하단 스크림 + 타이틀 + 작은 본문. 좌측 정렬.
+// Catalog: 제품 단독컷. 상단 골드 헤어라인+라벨(영문 대문자 자간) + 하단 명조 제목. 절제된 스크림.
 function photoAHTML(photoB64, kicker, title, body, faces) {
-  const bg = photoB64 ? `background-image:url(data:image/png;base64,${photoB64})` : 'background:linear-gradient(135deg,#0e1726,#0b1220)';
+  const bg = photoB64 ? `background-image:url(data:image/png;base64,${photoB64})` : 'background:linear-gradient(140deg,#16233c,#0b1322)';
   return `<!doctype html><html><head><meta charset="utf-8"><style>${styleCSS(faces)}
-.scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,9,16,.55) 0%,rgba(6,9,16,.12) 32%,rgba(6,9,16,.32) 58%,rgba(6,9,16,.92) 100%)}
-.abar{position:absolute;left:0;top:0;width:100%;height:14px;background:#ff5a4d;z-index:2}
-.kick{position:absolute;left:64px;top:60px;font-weight:700;font-size:30px;letter-spacing:.18em;color:#ffd9d5;text-transform:uppercase;text-shadow:0 2px 10px rgba(0,0,0,.7);z-index:2}
-.title{font-weight:800;font-size:82px;line-height:1.18;letter-spacing:-.03em;text-shadow:0 4px 24px rgba(0,0,0,.8)}
-.title em{color:#ff8a3d;font-style:normal}
-.body{margin-top:22px;font-weight:500;font-size:38px;line-height:1.5;color:#eef2f8;opacity:.94;text-shadow:0 2px 12px rgba(0,0,0,.75)}
-.brandmark{margin-top:28px;font-weight:800;font-size:32px;letter-spacing:.02em;color:#fff;opacity:.9;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,14,26,.40) 0%,rgba(8,14,26,.05) 30%,rgba(8,14,26,.28) 60%,rgba(8,14,26,.92) 100%)}
+.top{position:absolute;left:96px;right:96px;top:92px;z-index:2}
+.top .ln{width:56px;height:3px;background:var(--gold);margin-bottom:22px}
+.kick{font-weight:600;font-size:28px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+.title{font-family:'Myeongjo';font-weight:800;font-size:84px;line-height:1.22;letter-spacing:-.01em;color:var(--ivory);text-shadow:0 4px 22px rgba(0,0,0,.7)}
+.title em{color:var(--gold);font-style:normal}
+.body{margin-top:22px;font-weight:500;font-size:35px;line-height:1.5;color:rgba(244,239,230,.92);text-shadow:0 2px 12px rgba(0,0,0,.7)}
+.brand{margin-top:30px;font-weight:700;font-size:29px;letter-spacing:.04em;color:rgba(244,239,230,.85)}
 </style></head><body><div class="card"><div class="bg" style="${bg}"></div><div class="scrim"></div>
-<div class="abar"></div>${kicker ? `<div class="kick">${esc(kicker)}</div>` : ''}
-<div class="stage"><div class="title">${hl(title)}</div>${body ? `<div class="body">${hl(body)}</div>` : ''}<div class="brandmark">@dongsp5771</div></div></div></body></html>`;
+<div class="top">${kicker ? `<div class="ln"></div><div class="kick">${esc(kicker)}</div>` : ''}</div>
+<div class="stage"><div class="title">${hl(title)}</div>${body ? `<div class="body">${hl(body)}</div>` : ''}<div class="brand">@dongsp5771</div></div></div></body></html>`;
 }
 
-// photoB: 잡지 레이아웃. 사진 상단 + 하단 그린 컬러 밴드에 타이틀(다른 무게·자간). 번호 칩.
+// Feature: 매크로 디테일. 사진 상단 + 하단 아이보리(밝은) 밴드에 딥네이비 명조 제목. 골드 라벨.
 function photoBHTML(photoB64, no, title, body, faces) {
-  const bg = photoB64 ? `background-image:url(data:image/png;base64,${photoB64})` : 'background:#1a2230';
+  const bg = photoB64 ? `background-image:url(data:image/png;base64,${photoB64})` : 'background:linear-gradient(140deg,#16233c,#0b1322)';
   return `<!doctype html><html><head><meta charset="utf-8"><style>${styleCSS(faces)}
-html,body{background:#0a2c1a}
-.card{background:#12331f}
-.photo{position:absolute;left:0;top:0;width:100%;height:64%;overflow:hidden}
+html,body{background:var(--ivory)}
+.photo{position:absolute;left:0;top:0;width:100%;height:58%;overflow:hidden}
 .photo .bg{position:absolute;inset:0;${bg};background-size:cover;background-position:center}
-.band{position:absolute;left:0;bottom:0;width:100%;height:41%;background:linear-gradient(180deg,#0f3d24,#0a2c1a);padding:52px 64px ${SAFE_B}px;display:flex;flex-direction:column}
-.no{align-self:flex-start;font-weight:800;font-size:30px;letter-spacing:.04em;color:#0a2c1a;background:#7ff0b0;border-radius:999px;padding:6px 20px;margin-bottom:18px}
-.title{font-weight:700;font-size:66px;line-height:1.2;letter-spacing:.01em;color:#f2fff6}
-.title em{color:#7ff0b0;font-style:normal}
-.body{margin-top:14px;font-weight:400;font-size:33px;line-height:1.5;color:#cfe9d8}
-.brandmark{margin-top:auto;padding-top:22px;font-weight:800;font-size:32px;letter-spacing:.02em;color:#eafff2;opacity:.92}
+.band{position:absolute;left:0;bottom:0;width:100%;height:44%;background:var(--ivory);color:var(--ink);padding:56px 96px ${SAFE_B}px;display:flex;flex-direction:column}
+.no{align-self:flex-start;font-weight:600;font-size:26px;letter-spacing:.24em;color:var(--gold-d);text-transform:uppercase;margin-bottom:20px}
+.title{font-family:'Myeongjo';font-weight:800;font-size:68px;line-height:1.24;letter-spacing:-.01em;color:var(--ink)}
+.title em{color:var(--gold-d);font-style:normal}
+.body{margin-top:16px;font-weight:500;font-size:33px;line-height:1.55;color:#55617a}
+.brand{margin-top:auto;padding-top:20px;font-weight:700;font-size:28px;letter-spacing:.04em;color:#8a94a6}
 </style></head><body><div class="card"><div class="photo"><div class="bg"></div></div>
-<div class="band"><span class="no">${esc(no)}</span><div class="title">${hl(title)}</div>${body ? `<div class="body">${hl(body)}</div>` : ''}<div class="brandmark">@dongsp5771</div></div></div></body></html>`;
+<div class="band"><span class="no">${esc(no)}</span><div class="title">${hl(title)}</div>${body ? `<div class="body">${hl(body)}</div>` : ''}<div class="brand">@dongsp5771</div></div></div></body></html>`;
 }
 
 const planFile = join(ROOT, 'data/clients', clientId, 'plan.json');

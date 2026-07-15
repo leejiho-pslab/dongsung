@@ -30,7 +30,7 @@ html,body{width:1080px;height:1350px;font-family:'Pretendard';background:#0a1020
 .stage{position:absolute;inset:0;display:flex;flex-direction:column;padding:120px 96px 135px}
 .kick{font-weight:700;font-size:28px;letter-spacing:.32em;color:#d9b877;text-transform:uppercase}
 .kick .dot{color:#ff5a4d}
-.brand{margin-top:22px;font-weight:800;font-size:82px;letter-spacing:-.02em;line-height:1.08}
+.brand{margin-top:22px;font-family:'Myeongjo','Pretendard';font-weight:800;font-size:84px;letter-spacing:-.01em;line-height:1.14}
 .brand em{color:#e9c987;font-style:normal}
 .slogan{margin-top:20px;font-weight:500;font-size:33px;line-height:1.5;color:#c3cde0}
 .rule{margin:40px 0 4px;height:2px;background:linear-gradient(90deg,#d9b877,rgba(217,184,119,0))}

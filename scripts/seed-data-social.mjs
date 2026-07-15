@@ -2,19 +2,20 @@
 
 // 힉스필드 실사/AI 이미지 (텍스트 없음). slidePhotos에 슬라이드별로 배치 — 재사용 금지.
 const HF = 'https://d8j0ntlcm91z4.cloudfront.net/user_3GObHnwJ1UMUu9vETRNq0YG4Q5L/';
+// v2: 에디토리얼 아트디렉션(딥네이비·아이보리·골드 통일 그레이드) 신규 9컷. 재사용 금지.
 const P = {
-  // ① 시네마틱 (싸바리 언박싱)
-  unboxA: HF + 'hf_20260714_225156_8d4c46b9-9f56-476f-93ad-553c75793bdf.png',
-  unboxB: HF + 'hf_20260714_225156_df2bae66-5f64-46c3-9a80-d851170cb054.png',
-  foilMacro: HF + 'hf_20260714_225258_a1e1b9f7-53b5-44bf-9e89-ab2be2070e2c.png',
-  // ② 실사 캐러셀 (화장품 단상자)
-  cartonAngle: HF + 'hf_20260714_225829_2d62a6e6-4717-4a6d-8ca6-06b4a05878bc.png',
-  cartonTray: HF + 'hf_20260714_225834_edc403bc-a9b1-4552-a733-5b5a81b6f0fa.png',
-  cartonSet: HF + 'hf_20260714_225836_e6b5261a-fd82-4c44-bbd6-547a35a0b23f.png',
-  // ③ 매거진 (제작 디테일)
-  crossSection: HF + 'hf_20260714_225251_a59dccf7-4e7c-4f18-bd84-4ecd20f1f225.png',
-  embossMacro: HF + 'hf_20260714_203156_00d77cc7-d8bb-4c6a-83ca-75867ee131d9.png',
-  magnetOpen: HF + 'hf_20260714_203149_b26af749-afcc-4d8f-a0b6-75c3cfa90139.png',
+  // ① Editorial (싸바리 언박싱 무드)
+  unboxA: HF + 'hf_20260715_074655_02953ba8-be57-4012-a21f-26c8b76d8edf.png',
+  unboxB: HF + 'hf_20260715_074658_5eb3058d-ee9e-416b-a263-3f62e0abb55d.png',
+  foilMacro: HF + 'hf_20260715_074701_e9a89f36-fa09-4a15-bccd-8d4d1ad10923.png',
+  // ② Catalog (화장품 단상자 제품컷)
+  cartonAngle: HF + 'hf_20260715_074712_87fcbd42-ea74-418b-98de-128beefd8eaa.png',
+  cartonTray: HF + 'hf_20260715_075154_56b2f7d4-6bee-4329-872b-2312d38b6a67.png',
+  cartonSet: HF + 'hf_20260715_075150_2e6e0bce-0a58-4f20-bc56-9899806b30e9.png',
+  // ③ Feature (제작 디테일 매크로)
+  crossSection: HF + 'hf_20260715_075159_1f4cc6a3-4232-4577-afc3-4b2b7a35b4f3.png',
+  embossMacro: HF + 'hf_20260715_075215_ca43c5ee-5328-4703-8fc4-feaead8b63ef.png',
+  magnetOpen: HF + 'hf_20260715_075244_d42b13c9-82af-4ebe-b2a4-fbf19096dc52.png',
 };
 const AI_NOTE = '\n\n※ 이미지는 이해를 돕기 위한 AI 생성 예시예요. 실제 제작물은 상담 시 샘플로 보여드려요 🙂';
 
