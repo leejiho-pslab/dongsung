@@ -17,6 +17,10 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from 'node
 import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { outroHTML, outroRel, OUTRO_FILE } from './ig-outro.mjs';
+
+// 인스타 캐러셀(카드뉴스)에만 공통 마감 장표를 붙인다(릴스·유튜브 제외).
+const isIgCarousel = (it) => (it.channels || []).includes('instagram') && it.format === '카드뉴스';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const arg = (k, d) => {
@@ -299,6 +303,9 @@ function shoot(html, file) {
   );
 }
 
+// 공통 마감 장표 1회 렌더
+shoot(outroHTML(faces), OUTRO_FILE);
+
 let nSlides = 0;
 for (let i = 0; i < items.length; i++) {
   const item = items[i];
@@ -317,6 +324,7 @@ for (let i = 0; i < items.length; i++) {
     files.push(`cards/${clientId}/${f}`);
     nSlides++;
   });
+  if (isIgCarousel(item)) files.push(outroRel(clientId)); // 공통 마감 장표
   item.slideImages = files;
   item.cardImage = files[0];
 }

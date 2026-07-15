@@ -14,6 +14,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from 'node
 import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { outroHTML, outroRel, OUTRO_FILE } from './ig-outro.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const arg = (k, d) => { const i = process.argv.indexOf(`--${k}`); return i >= 0 ? process.argv[i + 1] : d; };
@@ -118,10 +119,23 @@ if (!targets.length) { console.log('이미지 전면형 인스타 항목(slidePh
 const chromium = findChromium();
 if (!chromium) { console.log('Chromium 없음 — 건너뜀'); process.exit(0); }
 const faces = fontFaces();
+const outDir = join(ROOT, 'docs/cards', clientId);
+mkdirSync(outDir, { recursive: true });
+
+// 공통 마감 장표(강점+위치+연락처) 1회 렌더 → 모든 캐러셀 끝에 붙인다.
+function shootFile(html, file) {
+  const t = join(outDir, `_tmp_${file}.html`);
+  writeFileSync(t, html);
+  execFileSync(chromium, [
+    '--headless', '--no-sandbox', '--disable-gpu', '--hide-scrollbars',
+    '--force-device-scale-factor=1', '--window-size=1080,1350',
+    `--screenshot=${join(outDir, file)}`, `file://${t}`,
+  ], { stdio: 'pipe' });
+  try { rmSync(t); } catch { /* ignore */ }
+}
+shootFile(outroHTML(faces), OUTRO_FILE);
 
 for (const it of targets) {
-  const outDir = join(ROOT, 'docs/cards', clientId);
-  mkdirSync(outDir, { recursive: true });
   const tmp = join(outDir, `_ig_${it.id}.html`);
   const style = it.igStyle || 'photoA';
   const slides = it.slides || [];
@@ -156,9 +170,10 @@ for (const it of targets) {
     files.push(`cards/${clientId}/${file}`);
   }
   try { rmSync(tmp); } catch { /* ignore */ }
+  files.push(outroRel(clientId)); // 공통 마감 장표
   it.slideImages = files;
   it.cardImage = files[0];
-  console.log(`  ${it.id} (${style}): ${files.length}장`);
+  console.log(`  ${it.id} (${style}): ${files.length}장 (+마감장표)`);
 }
 writeFileSync(planFile, JSON.stringify(plan, null, 2));
 console.log('이미지 전면형 인스타 렌더 완료 → docs/cards/');
