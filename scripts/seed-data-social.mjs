@@ -2,20 +2,20 @@
 
 // 힉스필드 실사/AI 이미지 (텍스트 없음). slidePhotos에 슬라이드별로 배치 — 재사용 금지.
 const HF = 'https://d8j0ntlcm91z4.cloudfront.net/user_3GObHnwJ1UMUu9vETRNq0YG4Q5L/';
-// v2: 에디토리얼 아트디렉션(딥네이비·아이보리·골드 통일 그레이드) 신규 9컷. 재사용 금지.
+// v3: 비전 검수 완료(글자 없는 컷만 채택). 텍스트 방지 = 라벨면 숨김·순수 텍스처·탑다운.
 const P = {
   // ① Editorial (싸바리 언박싱 무드)
-  unboxA: HF + 'hf_20260715_074655_02953ba8-be57-4012-a21f-26c8b76d8edf.png',
-  unboxB: HF + 'hf_20260715_074658_5eb3058d-ee9e-416b-a263-3f62e0abb55d.png',
-  foilMacro: HF + 'hf_20260715_074701_e9a89f36-fa09-4a15-bccd-8d4d1ad10923.png',
-  // ② Catalog (화장품 단상자 제품컷)
-  cartonAngle: HF + 'hf_20260715_074712_87fcbd42-ea74-418b-98de-128beefd8eaa.png',
-  cartonTray: HF + 'hf_20260715_075154_56b2f7d4-6bee-4329-872b-2312d38b6a67.png',
-  cartonSet: HF + 'hf_20260715_075150_2e6e0bce-0a58-4f20-bc56-9899806b30e9.png',
+  unboxA: HF + 'hf_20260715_074655_02953ba8-be57-4012-a21f-26c8b76d8edf.png',   // 언박싱(손+상자)
+  unboxB: HF + 'hf_20260715_074658_5eb3058d-ee9e-416b-a263-3f62e0abb55d.png',   // 네이비 상자+금박 크레스트
+  foilMacro: HF + 'hf_20260715_085439_c3feb81f-0956-4b32-8d5f-2f6ec8552c11.png', // 금박 스트라이프 매크로
+  // ② Catalog (화장품 패키지 — 라벨면 없는 컷)
+  cartonAngle: HF + 'hf_20260715_085447_e3baefbc-ac77-4a75-98bb-f29e984756b7.png', // 박스 탑다운(무지)
+  cartonTray: HF + 'hf_20260715_090109_d027ef95-7f2e-4e9d-8cf3-4648fcbe894f.png',  // 빈 트레이 내지
+  cartonSet: HF + 'hf_20260715_090120_2132e465-21fb-47c6-8df8-75b757c91c8d.png',   // 박스 엣지 스택
   // ③ Feature (제작 디테일 매크로)
-  crossSection: HF + 'hf_20260715_075159_1f4cc6a3-4232-4577-afc3-4b2b7a35b4f3.png',
-  embossMacro: HF + 'hf_20260715_075215_ca43c5ee-5328-4703-8fc4-feaead8b63ef.png',
-  magnetOpen: HF + 'hf_20260715_075244_d42b13c9-82af-4ebe-b2a4-fbf19096dc52.png',
+  crossSection: HF + 'hf_20260715_085511_58ead3dc-ad0d-4795-b095-b4233b619611.png', // 합지 단면
+  embossMacro: HF + 'hf_20260715_075215_ca43c5ee-5328-4703-8fc4-feaead8b63ef.png',  // 형압 텍스처
+  magnetOpen: HF + 'hf_20260715_075244_d42b13c9-82af-4ebe-b2a4-fbf19096dc52.png',   // 자석 모서리
 };
 const AI_NOTE = '\n\n※ 이미지는 이해를 돕기 위한 AI 생성 예시예요. 실제 제작물은 상담 시 샘플로 보여드려요 🙂';
 
