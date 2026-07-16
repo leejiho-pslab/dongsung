@@ -59,7 +59,7 @@ html,body{width:1080px;height:1080px}
 .uline{position:absolute;left:0;right:0;bottom:0;height:18px;background:${accent}}
 </style></head><body><div class="cover">
   <div class="title">${esc(title)}</div>
-  <div class="brand">@dongsp5771</div>
+  <div class="brand">@dongsp_official</div>
   <div class="uline"></div>
 </div></body></html>`;
 }

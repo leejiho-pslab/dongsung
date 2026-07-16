@@ -56,7 +56,7 @@ html,body{width:1080px;height:1350px;font-family:'Pretendard';background:#0a1020
     <div class="co">📦 패키지 상담 <em>언제든지</em></div>
     <div class="row"><span class="ic">📍</span><span>네이버 지도 · <b>naver.me/xk1Oro3N</b></span></div>
     <div class="row"><span class="ic">☎️</span><span>전화 <b>02-2272-5771</b> · 휴대폰 <b>010-2793-3837</b></span></div>
-    <div class="row"><span class="ic">📷</span><span>인스타 <b>@dongsp5771</b></span></div>
+    <div class="row"><span class="ic">📷</span><span>인스타 <b>@dongsp_official</b></span></div>
   </div>
 </div></div></body></html>`;
 }

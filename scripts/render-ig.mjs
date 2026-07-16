@@ -81,7 +81,7 @@ function cinemaHTML(photoB64, title, sub, faces) {
 .title em{color:var(--gold);font-style:normal}
 .brand{margin-top:34px;padding-top:26px;border-top:1.5px solid rgba(201,168,106,.5);font-weight:700;font-size:30px;letter-spacing:.04em;color:rgba(244,239,230,.9)}
 </style></head><body><div class="card"><div class="bg" style="${bg}"></div><div class="scrim"></div>
-<div class="stage">${sub ? `<div class="label">${esc(sub)}</div>` : ''}<div class="title">${hl(title)}</div><div class="brand">@dongsp5771 · 동성특수인쇄</div></div></div></body></html>`;
+<div class="stage">${sub ? `<div class="label">${esc(sub)}</div>` : ''}<div class="title">${hl(title)}</div><div class="brand">@dongsp_official · 동성특수인쇄</div></div></div></body></html>`;
 }
 
 // Catalog: 제품 단독컷. 상단 골드 헤어라인+라벨(영문 대문자 자간) + 하단 명조 제목. 절제된 스크림.
@@ -98,7 +98,7 @@ function photoAHTML(photoB64, kicker, title, body, faces) {
 .brand{margin-top:30px;font-weight:700;font-size:29px;letter-spacing:.04em;color:rgba(244,239,230,.85)}
 </style></head><body><div class="card"><div class="bg" style="${bg}"></div><div class="scrim"></div>
 <div class="top">${kicker ? `<div class="ln"></div><div class="kick">${esc(kicker)}</div>` : ''}</div>
-<div class="stage"><div class="title">${hl(title)}</div>${body ? `<div class="body">${hl(body)}</div>` : ''}<div class="brand">@dongsp5771</div></div></div></body></html>`;
+<div class="stage"><div class="title">${hl(title)}</div>${body ? `<div class="body">${hl(body)}</div>` : ''}<div class="brand">@dongsp_official</div></div></div></body></html>`;
 }
 
 // Feature: 매크로 디테일. 사진 상단 + 하단 아이보리(밝은) 밴드에 딥네이비 명조 제목. 골드 라벨.
@@ -115,7 +115,7 @@ html,body{background:var(--ivory)}
 .body{margin-top:16px;font-weight:500;font-size:33px;line-height:1.55;color:#55617a}
 .brand{margin-top:auto;padding-top:20px;font-weight:700;font-size:28px;letter-spacing:.04em;color:#8a94a6}
 </style></head><body><div class="card"><div class="photo"><div class="bg"></div></div>
-<div class="band"><span class="no">${esc(no)}</span><div class="title">${hl(title)}</div>${body ? `<div class="body">${hl(body)}</div>` : ''}<div class="brand">@dongsp5771</div></div></div></body></html>`;
+<div class="band"><span class="no">${esc(no)}</span><div class="title">${hl(title)}</div>${body ? `<div class="body">${hl(body)}</div>` : ''}<div class="brand">@dongsp_official</div></div></div></body></html>`;
 }
 
 const planFile = join(ROOT, 'data/clients', clientId, 'plan.json');

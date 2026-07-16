@@ -30,12 +30,12 @@
   "bannedWords": ["최저가", "100% 보장", "무조건"],
   "targets": ["instagram", "threads", "naver-blog", "blogger", "youtube"],
   "accounts": {
-    "instagram": "dongsp5771",
-    "threads": "dongsp5771"
+    "instagram": "dongsp_official",
+    "threads": "dongsp_official"
   },
   "channelLinks": {
-    "instagram": "https://www.instagram.com/dongsp5771",
-    "threads": "https://www.threads.net/@dongsp5771"
+    "instagram": "https://www.instagram.com/dongsp_official",
+    "threads": "https://www.threads.net/@dongsp_official"
   },
   "scheduleTimes": ["18:00"],
   "manualPlan": true,

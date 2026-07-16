@@ -153,7 +153,7 @@ function cardHTML(item, no, faces) {
       <div class="gtext"><div class="headline">${headlineHTML(item.headline)}</div><div class="sub">${esc(item.sub)}</div></div>
       <div class="gfig">${motifSVG(item.motif, v.accent, 380, 0.96)}</div>
     </div>
-    <div class="foot"><div class="brand">@dongsp5771</div><div class="tag">${esc(item.dayLabel)}</div></div>`;
+    <div class="foot"><div class="brand">@dongsp_official</div><div class="tag">${esc(item.dayLabel)}</div></div>`;
   } else if (v.layout === 'spotlight') {
     // C: 거대 호수 + 중앙 정렬 헤드라인 + 상단 작은 그래픽
     body = `
@@ -163,7 +163,7 @@ function cardHTML(item, no, faces) {
       <div class="headline" style="text-align:center">${headlineHTML(item.headline)}</div>
       <div class="sub" style="text-align:center;margin-left:auto;margin-right:auto">${esc(item.sub)}</div>
     </div>
-    <div class="foot"><div class="brand">@dongsp5771</div><div class="tag">${esc(item.dayLabel)}</div></div>`;
+    <div class="foot"><div class="brand">@dongsp_official</div><div class="tag">${esc(item.dayLabel)}</div></div>`;
   } else {
     // A: 에디토리얼 — 큰 그래픽 배경 워터마크 + 좌하단 헤드라인
     body = `
@@ -172,7 +172,7 @@ function cardHTML(item, no, faces) {
     <div class="rule"></div>
     <div class="headline" style="margin-top:auto">${headlineHTML(item.headline)}</div>
     <div class="sub">${esc(item.sub)}</div>
-    <div class="foot"><div class="brand">@dongsp5771</div><div class="tag">${esc(item.dayLabel)}</div></div>`;
+    <div class="foot"><div class="brand">@dongsp_official</div><div class="tag">${esc(item.dayLabel)}</div></div>`;
   }
   return `<!doctype html><html><head><meta charset="utf-8"><style>
 ${faces}
@@ -241,7 +241,7 @@ html,body{width:1080px;height:1350px}
   ${slide.label ? `<div class="label">${esc(slide.label)}</div>` : ''}
   ${slide.title ? `<div class="title">${esc(slide.title)}</div>` : ''}
   ${slide.body ? `<div class="body">${bodyHTML(slide.body)}</div>` : ''}
-  <div class="foot"><div class="brand">@dongsp5771</div><div class="tag">${esc(item.dayLabel)}</div></div>
+  <div class="foot"><div class="brand">@dongsp_official</div><div class="tag">${esc(item.dayLabel)}</div></div>
 </div></body></html>`;
 }
 
