@@ -117,20 +117,24 @@ function buildChannel(
 }
 
 function buildBlog(client: ClientConfig) {
-  // 네이버 데이터랩 실측 상대지수 (data/clients/<id>/keyword-trends.json)
-  let trends: { kw: string; index: number | null }[] = [];
+  // 키워드 데이터 (data/clients/<id>/keyword-trends.json)
+  //  v2(키워드도구): {kw, pc, mobile, total, comp} + related[]  ← 실제 월간검색수
+  //  v1(데이터랩):   {kw, index}                                ← 상대지수(폴백 호환)
+  let trends: { kw: string; index?: number | null; pc?: number; mobile?: number; total?: number; comp?: string }[] = [];
+  let related: { kw: string; total?: number; comp?: string }[] = [];
   let trendMeta = '';
   try {
     const base = process.env.PSLAB_DASH_DATADIR || 'data/clients';
     const raw = JSON.parse(
       readFileSync(join(base, client.id, 'keyword-trends.json'), 'utf8'),
-    ) as { source?: string; keywords?: { kw: string; index: number | null }[] };
+    ) as { source?: string; keywords?: typeof trends; related?: typeof related };
     trends = Array.isArray(raw.keywords) ? raw.keywords : [];
+    related = Array.isArray(raw.related) ? raw.related : [];
     trendMeta = String(raw.source || '');
   } catch {
     /* 파일 없으면 빈 트렌드 */
   }
-  return { trends, trendMeta };
+  return { trends, related, trendMeta };
 }
 
 function buildClientData(
@@ -754,13 +758,32 @@ function channelDetail(client, c){
 function blogSection(client){
   const b=client.blog;
   if(!b||!b.trends||!b.trends.length) return '';
-  const vals=b.trends.map(t=>t.index==null?0:t.index);
-  const max=Math.max.apply(null,[1].concat(vals));
-  let h='<div class="panel"><div class="sect-h" style="margin:0 0 10px"><h3>📊 네이버 검색 관심도</h3><span class="muted">'+esc(b.trendMeta||'네이버 데이터랩 · 상대지수')+'</span></div>';
+  // 천단위 콤마 (정규식 없이 — 클라 템플릿리터럴 이스케이프 함정 회피)
+  const fmt=function(n){ n=Math.round(n||0); var s=String(n),o='',c=0; for(var i=s.length-1;i>=0;i--){o=s[i]+o; if(++c%3===0&&i>0)o=','+o;} return o; };
+  const isV2=b.trends.some(function(t){return t.total!=null||t.pc!=null;});
+  const compBadge=function(cc){ if(!cc) return ''; var col=cc==='높음'?'#e2503f':(cc==='중간'?'#c08a2a':'#3a8f5a'); return '<span style="color:'+col+'">●</span> '+esc(cc); };
+  let h='<div class="panel"><div class="sect-h" style="margin:0 0 10px"><h3>📊 '+(isV2?'네이버 월간 검색량 · 키워드 기반 기획':'네이버 검색 관심도')+'</h3><span class="muted">'+esc(b.trendMeta||'')+'</span></div>';
+  if(isV2){
+    var rows=b.trends.slice().sort(function(a,c){return (c.total||0)-(a.total||0);});
+    var max=Math.max.apply(null,[1].concat(rows.map(function(t){return t.total||0;})));
+    h+='<div class="muted" style="font-size:12px;margin:0 0 8px">검색량 높은 키워드 = 블로그 기획 우선순위. 매주 자동 갱신됩니다.</div>';
+    h+='<table><tr><th>키워드</th><th>월간검색수</th><th>PC·모바일</th><th>경쟁</th><th></th></tr>'+
+      rows.map(function(t){
+        var v=t.total||0; var w=Math.round(v/max*100);
+        return '<tr><td>#'+esc(t.kw)+'</td><td><b>'+fmt(v)+'</b></td><td class="muted" style="font-size:12px">'+fmt(t.pc)+' · '+fmt(t.mobile)+'</td><td style="font-size:12px">'+compBadge(t.comp)+'</td><td style="width:30%"><div class="bar"><i style="width:'+w+'%"></i></div></td></tr>';
+      }).join('')+'</table>';
+    if(b.related&&b.related.length){
+      h+='<div class="sect-h" style="margin:14px 0 6px"><h3 style="font-size:14px">🔎 새 소재 후보 · 검색량 상위 연관키워드</h3></div>';
+      h+='<div>'+b.related.map(function(r){return '<span class="tag">#'+esc(r.kw)+' · '+fmt(r.total)+'</span>';}).join('')+'</div>';
+    }
+    return h+'</div>';
+  }
+  // v1 폴백 (데이터랩 상대지수)
+  var vals=b.trends.map(function(t){return t.index==null?0:t.index;});
+  var max1=Math.max.apply(null,[1].concat(vals));
   h+='<table><tr><th>키워드</th><th>상대 관심도</th><th></th></tr>'+
     b.trends.map(function(t){
-      var v=t.index==null?0:t.index;
-      var w=Math.round(v/max*100);
+      var v=t.index==null?0:t.index; var w=Math.round(v/max1*100);
       var disp=t.index==null?'데이터 부족':(t.index<1?'<1':String(t.index));
       return '<tr><td>#'+esc(t.kw)+'</td><td>'+disp+'</td><td style="width:46%"><div class="bar"><i style="width:'+w+'%"></i></div></td></tr>';
     }).join('')+'</table></div>';
