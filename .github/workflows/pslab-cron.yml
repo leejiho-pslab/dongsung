@@ -143,6 +143,17 @@ jobs:
             echo "토요일 아님 — 차주 기획 생략"
           fi
 
+      # 3-4) 레퍼런스·벤치마킹 수집 — 매주 월요일(인스타 Business Discovery, 발행 토큰 재사용)
+      #      benchmarks 계정의 최근 게시물을 docs/references/ 로 받아 대시보드 갤러리에 표시.
+      - name: 레퍼런스·벤치마킹 수집 (월요일)
+        continue-on-error: true
+        run: |
+          if [ "$(date +%u)" = "1" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            node scripts/fetch-references.mjs --client dongsung
+          else
+            echo "월요일 아님 — 레퍼런스 수집 생략"
+          fi
+
       # 4) 배경 사진 수집 (인물·배경·상황) — Pexels(키 있으면) → Pollinations(무료)
       - name: 배경 사진 수집
         continue-on-error: true
@@ -189,7 +200,7 @@ jobs:
           git config user.name "pslab-bot"
           git config user.email "actions@users.noreply.github.com"
           touch docs/.nojekyll
-          git add -f data/ docs/index.html docs/.nojekyll docs/cards docs/blog docs/shorts docs/bg 2>/dev/null || true
+          git add -f data/ docs/index.html docs/.nojekyll docs/cards docs/blog docs/shorts docs/bg docs/references 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "변경 없음"; exit 0
           fi

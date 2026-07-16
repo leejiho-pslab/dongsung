@@ -37,6 +37,9 @@
     "instagram": "https://www.instagram.com/dongsp_official",
     "threads": "https://www.threads.net/@dongsp_official"
   },
+  "benchmarks": {
+    "instagram": ["packative", "customboxmakers", "pakfactory"]
+  },
   "scheduleTimes": ["18:00"],
   "manualPlan": true,
   "reviewMode": "manual",
