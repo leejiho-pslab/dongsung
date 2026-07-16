@@ -118,15 +118,30 @@ jobs:
             echo "월요일 아님 — 주간 리포트 생략"
           fi
 
-      # 3-2) 네이버 키워드도구 월간검색수 수집 → keyword-trends.json (블로그 기획 우선순위)
-      #      NAVER_AD_API_KEY/SECRET/CUSTOMER_ID 시크릿 있으면 실제 검색량, 없으면 기존 유지
-      - name: 네이버 키워드 검색량 수집
+      # 3-2) 네이버 키워드도구 월간검색수 수집 → keyword-trends.json (핵심/연관/시의성 3시트)
+      #      매주 금요일에만 갱신(기준일 고정). 수동 실행(workflow_dispatch) 때도 갱신.
+      - name: 네이버 키워드 검색량 수집 (금요일)
         continue-on-error: true
         env:
           NAVER_AD_API_KEY: ${{ secrets.NAVER_AD_API_KEY }}
           NAVER_AD_SECRET: ${{ secrets.NAVER_AD_SECRET }}
           NAVER_AD_CUSTOMER_ID: ${{ secrets.NAVER_AD_CUSTOMER_ID }}
-        run: node scripts/fetch-keywords.mjs --client dongsung
+        run: |
+          if [ "$(date +%u)" = "5" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            node scripts/fetch-keywords.mjs --client dongsung
+          else
+            echo "금요일 아님 — 키워드 갱신 생략(기준일 유지)"
+          fi
+
+      # 3-3) 차주 콘텐츠 주간 기획 — 매주 토요일(키워드 검색량 기반 다음주 스케줄)
+      - name: 차주 콘텐츠 기획 (토요일)
+        continue-on-error: true
+        run: |
+          if [ "$(date +%u)" = "6" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            node scripts/plan-week.mjs --client dongsung
+          else
+            echo "토요일 아님 — 차주 기획 생략"
+          fi
 
       # 4) 배경 사진 수집 (인물·배경·상황) — Pexels(키 있으면) → Pollinations(무료)
       - name: 배경 사진 수집

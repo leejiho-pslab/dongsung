@@ -1,0 +1,74 @@
+{
+  "generatedAt": "2026-07-16T02:45:59.729Z",
+  "weekStart": "2026-07-20",
+  "weekEnd": "2026-07-26",
+  "note": "키워드 검색량 기반 차주 기획안 · 제작은 감도/가짜글자 검수 후 진행",
+  "items": [
+    {
+      "date": "2026-07-20",
+      "scheduledFor": "2026-07-20T09:00:00.000Z",
+      "channel": "naver-blog",
+      "channelLabel": "네이버 블로그",
+      "keyword": "패키지제작",
+      "sheet": "핵심",
+      "volume": 0,
+      "title": "패키지제작, 왜 브랜드마다 다를까 — 동성특수인쇄 실장의 정리",
+      "status": "proposed"
+    },
+    {
+      "date": "2026-07-21",
+      "scheduledFor": "2026-07-21T09:00:00.000Z",
+      "channel": "instagram",
+      "channelLabel": "인스타그램",
+      "keyword": "화장품박스",
+      "sheet": "핵심",
+      "volume": 0,
+      "title": "화장품박스, 이것만 알면 반은 성공 ✨",
+      "status": "proposed"
+    },
+    {
+      "date": "2026-07-22",
+      "scheduledFor": "2026-07-22T09:00:00.000Z",
+      "channel": "blogger",
+      "channelLabel": "구글 블로그",
+      "keyword": "지기구조",
+      "sheet": "핵심",
+      "volume": 0,
+      "title": "지기구조 발주 전 체크리스트 (예산·납기·샘플)",
+      "status": "proposed"
+    },
+    {
+      "date": "2026-07-23",
+      "scheduledFor": "2026-07-23T09:00:00.000Z",
+      "channel": "instagram",
+      "channelLabel": "인스타그램",
+      "keyword": "금박인쇄",
+      "sheet": "핵심",
+      "volume": 0,
+      "title": "금박인쇄의 디테일, 여기서 갈립니다",
+      "status": "proposed"
+    },
+    {
+      "date": "2026-07-24",
+      "scheduledFor": "2026-07-24T09:00:00.000Z",
+      "channel": "naver-blog",
+      "channelLabel": "네이버 블로그",
+      "keyword": "인쇄후가공",
+      "sheet": "핵심",
+      "volume": 0,
+      "title": "인쇄후가공, 실무자가 꼭 아는 3가지 — 제작 전 체크리스트",
+      "status": "proposed"
+    },
+    {
+      "date": "2026-07-25",
+      "scheduledFor": "2026-07-25T09:00:00.000Z",
+      "channel": "instagram",
+      "channelLabel": "인스타그램",
+      "keyword": "선물세트박스",
+      "sheet": "핵심",
+      "volume": 0,
+      "title": "선물세트박스 고를 때 놓치기 쉬운 포인트",
+      "status": "proposed"
+    }
+  ]
+}

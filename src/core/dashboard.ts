@@ -118,23 +118,40 @@ function buildChannel(
 
 function buildBlog(client: ClientConfig) {
   // 키워드 데이터 (data/clients/<id>/keyword-trends.json)
-  //  v2(키워드도구): {kw, pc, mobile, total, comp} + related[]  ← 실제 월간검색수
-  //  v1(데이터랩):   {kw, index}                                ← 상대지수(폴백 호환)
-  let trends: { kw: string; index?: number | null; pc?: number; mobile?: number; total?: number; comp?: string }[] = [];
-  let related: { kw: string; total?: number; comp?: string }[] = [];
-  let trendMeta = '';
+  //  v3(3시트): core/related/timely = {kw,pc,mobile,total,comp} + baseDate
+  //  v2:        keywords + related
+  //  v1(데이터랩): keywords={kw,index}  ← 폴백
+  type KW = { kw: string; index?: number | null; pc?: number; mobile?: number; total?: number; comp?: string };
+  let core: KW[] = [], related: KW[] = [], timely: KW[] = [], trends: KW[] = [];
+  let trendMeta = '', baseDate = '', updateCycle = '';
   try {
     const base = process.env.PSLAB_DASH_DATADIR || 'data/clients';
     const raw = JSON.parse(
       readFileSync(join(base, client.id, 'keyword-trends.json'), 'utf8'),
-    ) as { source?: string; keywords?: typeof trends; related?: typeof related };
-    trends = Array.isArray(raw.keywords) ? raw.keywords : [];
+    ) as { source?: string; baseDate?: string; updateCycle?: string; core?: KW[]; related?: KW[]; timely?: KW[]; keywords?: KW[] };
+    core = Array.isArray(raw.core) ? raw.core : (Array.isArray(raw.keywords) ? raw.keywords : []);
     related = Array.isArray(raw.related) ? raw.related : [];
+    timely = Array.isArray(raw.timely) ? raw.timely : [];
+    trends = core; // 하위호환
     trendMeta = String(raw.source || '');
+    baseDate = String(raw.baseDate || '');
+    updateCycle = String(raw.updateCycle || '');
   } catch {
     /* 파일 없으면 빈 트렌드 */
   }
-  return { trends, related, trendMeta };
+  return { core, related, timely, trends, trendMeta, baseDate, updateCycle };
+}
+
+function buildWeekPlan(client: ClientConfig) {
+  // 차주 콘텐츠 기획안 (data/clients/<id>/week-plan.json) — 키워드 기반 주간 스케줄
+  try {
+    const base = process.env.PSLAB_DASH_DATADIR || 'data/clients';
+    const raw = JSON.parse(readFileSync(join(base, client.id, 'week-plan.json'), 'utf8')) as {
+      weekStart?: string; weekEnd?: string; generatedAt?: string; note?: string;
+      items?: { date: string; channelLabel: string; keyword: string; sheet: string; volume: number; title: string }[];
+    };
+    return { weekStart: raw.weekStart || '', weekEnd: raw.weekEnd || '', note: raw.note || '', items: Array.isArray(raw.items) ? raw.items : [] };
+  } catch { return null; }
 }
 
 function buildClientData(
@@ -236,6 +253,7 @@ function buildClientData(
     channels,
     channelLinks,
     blog,
+    weekPlan: buildWeekPlan(client),
     learning: learning ?? null,
     tokenHealth: tokenHealth ?? null,
     weeklyReport: weeklyReport ?? null,
@@ -755,34 +773,51 @@ function channelDetail(client, c){
   h+= pubCards.length? '<div class="cards">'+pubCards.join('')+'</div>' : '<div class="empty">이 기간에 발행된 콘텐츠가 없습니다.</div>';
   return h;
 }
+function weekPlanPanel(client){
+  const w=client.weekPlan;
+  if(!w||!w.items||!w.items.length) return '';
+  const chColor=function(c){ return c.indexOf('인스타')>=0?'#e2503f':(c.indexOf('네이버')>=0?'#2db400':'#c08a2a'); };
+  const sheetBadge=function(s){ var col=s==='시의성'?'#c08a2a':(s==='연관'?'#3a8f5a':'#e2503f'); return '<span class="badge" style="background:'+col+'22;color:'+col+'">'+esc(s)+'</span>'; };
+  let h='<div class="panel"><div class="sect-h" style="margin:0 0 8px"><h3>📅 차주 콘텐츠 기획 · 키워드 기반</h3><span class="muted">'+esc(w.weekStart)+' ~ '+esc(w.weekEnd)+' · 매주 토요일 자동 생성</span></div>';
+  if(w.note) h+='<div class="muted" style="font-size:12px;margin:0 0 8px">'+esc(w.note)+'</div>';
+  h+='<table><tr><th>날짜</th><th>채널</th><th>키워드</th><th>제안 제목</th></tr>'+
+    w.items.map(function(it){ return '<tr><td style="white-space:nowrap">'+esc(it.date)+'</td><td style="white-space:nowrap;color:'+chColor(it.channelLabel)+'">'+esc(it.channelLabel)+'</td><td style="white-space:nowrap">'+sheetBadge(it.sheet)+' #'+esc(it.keyword)+'</td><td>'+esc(it.title)+'</td></tr>'; }).join('')+'</table></div>';
+  return h;
+}
 function blogSection(client){
   const b=client.blog;
-  if(!b||!b.trends||!b.trends.length) return '';
+  if(!b) return '';
+  const core=b.core||b.trends||[];
+  if(!core.length) return '';
   // 천단위 콤마 (정규식 없이 — 클라 템플릿리터럴 이스케이프 함정 회피)
   const fmt=function(n){ n=Math.round(n||0); var s=String(n),o='',c=0; for(var i=s.length-1;i>=0;i--){o=s[i]+o; if(++c%3===0&&i>0)o=','+o;} return o; };
-  const isV2=b.trends.some(function(t){return t.total!=null||t.pc!=null;});
+  const isV2=core.some(function(t){return t.total!=null||t.pc!=null;});
   const compBadge=function(cc){ if(!cc) return ''; var col=cc==='높음'?'#e2503f':(cc==='중간'?'#c08a2a':'#3a8f5a'); return '<span style="color:'+col+'">●</span> '+esc(cc); };
-  let h='<div class="panel"><div class="sect-h" style="margin:0 0 10px"><h3>📊 '+(isV2?'네이버 월간 검색량 · 키워드 기반 기획':'네이버 검색 관심도')+'</h3><span class="muted">'+esc(b.trendMeta||'')+'</span></div>';
-  if(isV2){
-    var rows=b.trends.slice().sort(function(a,c){return (c.total||0)-(a.total||0);});
+  // 한 시트(표) 렌더 — 검색량順 top20
+  const sheet=function(title,sub,rows){
+    if(!rows||!rows.length) return '';
     var max=Math.max.apply(null,[1].concat(rows.map(function(t){return t.total||0;})));
-    h+='<div class="muted" style="font-size:12px;margin:0 0 8px">검색량 높은 키워드 = 블로그 기획 우선순위. 매주 자동 갱신됩니다.</div>';
-    h+='<table><tr><th>키워드</th><th>월간검색수</th><th>PC·모바일</th><th>경쟁</th><th></th></tr>'+
-      rows.map(function(t){
-        var v=t.total||0; var w=Math.round(v/max*100);
-        return '<tr><td>#'+esc(t.kw)+'</td><td><b>'+fmt(v)+'</b></td><td class="muted" style="font-size:12px">'+fmt(t.pc)+' · '+fmt(t.mobile)+'</td><td style="font-size:12px">'+compBadge(t.comp)+'</td><td style="width:30%"><div class="bar"><i style="width:'+w+'%"></i></div></td></tr>';
-      }).join('')+'</table>';
-    if(b.related&&b.related.length){
-      h+='<div class="sect-h" style="margin:14px 0 6px"><h3 style="font-size:14px">🔎 새 소재 후보 · 검색량 상위 연관키워드</h3></div>';
-      h+='<div>'+b.related.map(function(r){return '<span class="tag">#'+esc(r.kw)+' · '+fmt(r.total)+'</span>';}).join('')+'</div>';
-    }
+    var h='<div style="margin-top:14px"><div class="sect-h" style="margin:0 0 6px"><h3 style="font-size:15px">'+title+'</h3><span class="muted" style="font-size:12px">'+sub+' · '+rows.length+'개</span></div>';
+    h+='<div style="max-height:340px;overflow:auto;border:1px solid #eee;border-radius:8px"><table><tr><th>키워드</th><th>월검색수</th><th>PC·모바일</th><th>경쟁</th><th></th></tr>'+
+      rows.map(function(t){ var v=t.total||0; var w=Math.round(v/max*100);
+        return '<tr><td>#'+esc(t.kw)+'</td><td><b>'+fmt(v)+'</b></td><td class="muted" style="font-size:12px">'+fmt(t.pc)+' · '+fmt(t.mobile)+'</td><td style="font-size:12px">'+compBadge(t.comp)+'</td><td style="width:24%"><div class="bar"><i style="width:'+w+'%"></i></div></td></tr>';
+      }).join('')+'</table></div></div>';
+    return h;
+  };
+  let h='<div class="panel">';
+  h+='<div class="sect-h" style="margin:0 0 6px"><h3>📊 '+(isV2?'네이버 월간 검색량 · 키워드 기반 기획':'네이버 검색 관심도')+'</h3><span class="muted">'+esc(b.trendMeta||'')+'</span></div>';
+  if(isV2){
+    if(b.baseDate) h+='<div class="muted" style="font-size:12px;margin:0 0 4px">📅 기준일 <b>'+esc(b.baseDate)+'</b> · '+esc(b.updateCycle||'매주 금요일')+' 자동 갱신 · 검색량順 = 기획 우선순위</div>';
+    h+=sheet('🎯 핵심 키워드','브랜드 최상위 연관',b.core||core);
+    h+=sheet('🔗 연관 키워드','핵심에서 파생·관련도 높음',b.related);
+    h+=sheet('🗓️ 시의성 키워드','시즌·이슈 연결',b.timely);
     return h+'</div>';
   }
   // v1 폴백 (데이터랩 상대지수)
-  var vals=b.trends.map(function(t){return t.index==null?0:t.index;});
+  var vals=core.map(function(t){return t.index==null?0:t.index;});
   var max1=Math.max.apply(null,[1].concat(vals));
   h+='<table><tr><th>키워드</th><th>상대 관심도</th><th></th></tr>'+
-    b.trends.map(function(t){
+    core.map(function(t){
       var v=t.index==null?0:t.index; var w=Math.round(v/max1*100);
       var disp=t.index==null?'데이터 부족':(t.index<1?'<1':String(t.index));
       return '<tr><td>#'+esc(t.kw)+'</td><td>'+disp+'</td><td style="width:46%"><div class="bar"><i style="width:'+w+'%"></i></div></td></tr>';
@@ -883,6 +918,7 @@ function overview(client){
   let h=tokenBanner(client);
   h+=setupPanel();
   h+=channelLinksPanel(client);
+  h+=weekPlanPanel(client);
   h+=weeklyPanel(client);
   h+=periodBar();
   h+='<div class="kpis">'+
