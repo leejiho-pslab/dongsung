@@ -883,20 +883,14 @@ function pubDataRows(items){
 function setupPanel(){
   const s=DATA.setup||{};
   const settingsUrl='https://github.com/'+REPO+'/settings/secrets/actions';
-  const varsUrl='https://github.com/'+REPO+'/settings/variables/actions';
-  const row=(ok,name,todo,url)=>'<tr><td style="width:34px;font-size:16px">'+(ok?'✅':'⬜')+'</td><td><b>'+esc(name)+'</b>'+(ok?'':'<div class="muted" style="margin-top:2px">'+todo+(url?' · <a href="'+url+'" target="_blank">설정 열기 ↗</a>':'')+'</div>')+'</td></tr>';
-  const done=[s.instagram,s.threads,s.telegram,s.anthropic,s.realPublish].filter(Boolean).length;
-  return '<div class="panel" style="border-color:#2b6fff">'+
-    '<div class="sect-h" style="margin:0 0 8px"><h3>🚀 오픈 준비 체크리스트</h3><span class="muted">'+done+'/5 완료</span></div>'+
-    '<table>'+
-    row(s.instagram,'인스타그램 연결','발행 토큰 미설정 — PSLAB_INSTAGRAM_ACCESS_TOKEN 시크릿',settingsUrl)+
-    row(s.threads,'스레드 연결','발행 토큰 미설정 — PSLAB_THREADS_ACCESS_TOKEN 시크릿',settingsUrl)+
-    row(s.telegram,'텔레그램 푸시','@BotFather로 봇 생성 → TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID 시크릿',settingsUrl)+
-    row(s.blogger,'구글 블로그 자동발행','선택 — Blogger OAuth(클라이언트/리프레시 토큰/블로그ID) 시크릿',settingsUrl)+
-    row(s.anthropic,'AI 글·코멘트','ANTHROPIC_API_KEY 시크릿 (없으면 규칙기반으로 동작)',settingsUrl)+
-    row(s.realPublish,'실제 자동발행 ON','예약 발행을 켜려면 Variables에 PSLAB_DRY_RUN=false (지금은 안전 시뮬레이션)',varsUrl)+
-    '</table>'+
-    '<div class="muted" style="margin-top:8px"><b>구글 블로그</b>는 API로 자동발행됩니다. <b>네이버 블로그·유튜브</b>는 공식 자동발행 API가 없어 <b>수동(복붙)</b> 채널입니다.</div>'+
+  const chip=(ok,name)=>'<span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;border:1px solid '+(ok?'#a8dcbe':'#e2e5ea')+';background:'+(ok?'#eafaf0':'#f7f8fa')+';font-size:13px;font-weight:600;color:'+(ok?'#1a7a45':'#8a94a6')+'">'+(ok?'✅':'⬜')+' '+esc(name)+'</span>';
+  const done=[s.instagram,s.threads,s.telegram,s.blogger,s.anthropic,s.realPublish].filter(Boolean).length;
+  return '<div class="panel" style="margin-top:14px">'+
+    '<div class="sect-h" style="margin:0 0 8px"><h3 style="font-size:15px">🔌 채널 연결 상황</h3><span class="muted">'+done+'/6 · <a href="'+settingsUrl+'" target="_blank">설정 열기 ↗</a></span></div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:8px">'+
+      chip(s.instagram,'인스타그램')+chip(s.threads,'스레드')+chip(s.blogger,'구글 블로그')+chip(s.telegram,'텔레그램')+chip(s.anthropic,'AI 글')+chip(s.realPublish,'실제 발행 ON')+
+    '</div>'+
+    '<div class="muted" style="margin-top:8px;font-size:12px">네이버 블로그·유튜브는 공식 발행 API가 없어 <b>수동(복붙)</b> 채널입니다.</div>'+
     '</div>';
 }
 // 채널 바로가기 — 채널별 그라데이션 카드(클릭 시 관리로 이동)
@@ -916,7 +910,6 @@ function channelLinksPanel(client){
 }
 function overview(client){
   let h=tokenBanner(client);
-  h+=setupPanel();
   h+=channelLinksPanel(client);
   h+=weekPlanPanel(client);
   h+=weeklyPanel(client);
@@ -962,6 +955,8 @@ function overview(client){
   h+= pubCards.length?'<div class="cards">'+pubCards.join('')+'</div>':'<div class="empty">이 기간에 발행된 게시물이 없습니다.</div>';
   // 경쟁사
   h+='<div class="panel" style="margin-top:16px"><h3>벤치마킹 경쟁사</h3><div>'+(client.competitors.length?client.competitors.map(x=>'<span class="tag">@'+esc(x)+'</span>').join(''):'<span class="muted">미설정</span>')+'</div></div>';
+  // 채널 연결 상황(압축) — 최하단
+  h+=setupPanel();
   return h;
 }
 function kpi(v,l,accent){return '<div class="kpi"><div class="v'+(accent?' accent':'')+'">'+v+'</div><div class="l">'+l+'</div></div>';}
