@@ -96,10 +96,12 @@ const mapRow = (r) => {
 const primary = seeds.map((s) => rows.get(s)).filter(Boolean).map(mapRow)
   .sort((a, b) => b.total - a.total);
 
-// 2) 발굴: 시드에 없던 연관키워드 중 검색량 상위 12개(새 소재 후보)
+// 2) 발굴: 시드에 없던 연관키워드 중 "패키지/인쇄 관련"만 + 검색량 상위 12개(새 소재 후보)
+//    ※ 네이버 keywordstool은 캘린더·가방 등 무관한 대량 키워드도 섞어주므로 관련어만 필터.
 const seedSet = new Set(seeds);
+const PKG_RE = /(박스|상자|패키지|쇼핑백|지함|카톤|포장|인쇄|후가공|금박|은박|형압|에폭시|홀로그램|단상자|합지|굿즈|케이스|리플렛|명함|스티커|라벨|지기|틴|제작소|인쇄소)/;
 const related = [...rows.values()].map(mapRow)
-  .filter((r) => !seedSet.has(r.kw) && r.total > 0)
+  .filter((r) => !seedSet.has(r.kw) && r.total > 0 && PKG_RE.test(r.kw))
   .sort((a, b) => b.total - a.total).slice(0, 12);
 
 const out = {
