@@ -28,7 +28,6 @@ const CHANNELS: Array<{ key: PlatformId; label: string; icon: string }> = [
   { key: 'naver-blog', label: '네이버 블로그', icon: '📝' },
   { key: 'blogger', label: '구글 블로그', icon: '🅱️' },
   { key: 'youtube', label: '유튜브', icon: '▶️' },
-  { key: 'linkedin', label: '링크드인', icon: '💼' },
 ];
 
 interface ChannelPublished {
@@ -211,7 +210,6 @@ function buildClientData(
       case 'naver-blog': return 'https://admin.blog.naver.com/';
       case 'blogger': return 'https://www.blogger.com/';
       case 'youtube': return 'https://studio.youtube.com/';
-      case 'linkedin': return handle ? `https://www.linkedin.com/in/${handle}` : 'https://www.linkedin.com/';
       default: return '';
     }
   };
@@ -281,7 +279,6 @@ export function renderDashboard(
     anthropic: has('ANTHROPIC_API_KEY'),
     instagram: has('PSLAB_INSTAGRAM_ACCESS_TOKEN', 'PSLAB_INSTAGRAM_IG_USER_ID'),
     threads: has('PSLAB_THREADS_ACCESS_TOKEN', 'PSLAB_THREADS_THREADS_USER_ID'),
-    linkedin: has('PSLAB_LINKEDIN_ACCESS_TOKEN', 'PSLAB_LINKEDIN_AUTHOR_URN'),
     blogger: has('PSLAB_BLOGGER_REFRESH_TOKEN', 'PSLAB_BLOGGER_BLOG_ID'),
   };
   const data = {
@@ -549,10 +546,13 @@ function guideView(client){
 function channelGuidePanel(client, key){
   const g=(client.channelGuides||{})[key];
   if(!g||(!g.guide&&!(g.topics||[]).length)) return '';
-  return '<div class="panel" style="border-color:#c4d6f4;background:#f8fbff"><div class="sect-h" style="margin:0 0 8px"><h3>🧭 이 채널의 콘텐츠 가이드</h3><button class="btn" onclick="setCh(\\'guide\\')">지침 탭에서 수정 →</button></div>'+
-    ((g.topics||[]).length?'<div style="margin-bottom:6px">'+(g.topics||[]).map(t=>'<span class="tag" style="background:#e7effc;border-color:#c4d6f4;color:#2b5fd0">#'+esc(t)+'</span>').join('')+'</div>':'')+
-    (g.guide?'<div class="mcap" style="font-size:13px;white-space:pre-wrap;color:#3a4254">'+esc(g.guide)+'</div>':'')+
-    '<div class="muted" style="margin-top:8px">이 가이드는 콘텐츠 생성 시 프롬프트와 소재 선정에 자동 반영됩니다.</div></div>';
+  // 심플 버전: 핵심 소재(태그) + 가이드 첫 2줄 미리보기. 세부는 지침 탭에서.
+  var lines=(g.guide||'').split('\\n').map(function(s){return s.trim();}).filter(Boolean);
+  var preview=lines.slice(0,2).join(' ');
+  return '<div class="panel" style="border-color:#c4d6f4;background:#f8fbff"><div class="sect-h" style="margin:0 0 8px"><h3>🧭 이 채널 콘텐츠 가이드</h3><button class="btn" onclick="setCh(\\'guide\\')">지침 탭에서 전체 보기 →</button></div>'+
+    ((g.topics||[]).length?'<div style="margin-bottom:4px"><span class="muted" style="font-size:12px">핵심 소재</span></div><div style="margin-bottom:8px">'+(g.topics||[]).slice(0,6).map(t=>'<span class="tag" style="background:#e7effc;border-color:#c4d6f4;color:#2b5fd0">#'+esc(t)+'</span>').join('')+'</div>':'')+
+    (preview?'<div class="mcap" style="font-size:13px;color:#3a4254">'+esc(preview)+(lines.length>2?' <span class="muted">… 세부 지침은 지침 탭에서</span>':'')+'</div>':'')+
+    '</div>';
 }
 function submitReq(key, chLabel){
   const ta=document.getElementById('reqtext-'+key);
@@ -621,7 +621,7 @@ function openDetail(id){
   const imgs=(it.slideImages&&it.slideImages.length)?it.slideImages:(it.cardImage?[it.cardImage]:[]);
   const chDef=DATA.channels.find(x=>x.key===((it.channels||[])[0]))||{icon:'📸',label:'인스타그램',key:'instagram'};
   const isCarousel=imgs.length>1;
-  const capLabel=chDef.key==='naver-blog'?'📝 블로그 본문':chDef.key==='youtube'?'🎬 쇼츠 대본':chDef.key==='threads'?'🧵 스레드 타래':chDef.key==='linkedin'?'💼 링크드인 포스트':'📝 발행 캡션';
+  const capLabel=chDef.key==='naver-blog'?'📝 블로그 본문':chDef.key==='youtube'?'🎬 쇼츠 대본':chDef.key==='threads'?'🧵 스레드 타래':'📝 발행 캡션';
   const slides=imgs.map((s,i)=>'<div class="slide"><img src="'+esc(imgv(s))+'" alt=""/><span class="snum">'+(i+1)+' / '+imgs.length+'</span></div>').join('');
   const cap=fmtCaption(it.captionBody||it.captionNote||'');
   const m=it.metrics;
@@ -895,9 +895,9 @@ function setupPanel(){
 }
 // 채널 바로가기 — 채널별 그라데이션 카드(클릭 시 관리로 이동)
 function chGrad(key){
-  return ({youtube:'linear-gradient(135deg,#fdecec,#fbdcdc)',instagram:'linear-gradient(135deg,#fceaf5,#f6d8ec)',threads:'linear-gradient(135deg,#ecf5f5,#dcecec)','naver-blog':'linear-gradient(135deg,#eafaf0,#d8f0e2)',blogger:'linear-gradient(135deg,#fdf3e6,#f8e6cc)',linkedin:'linear-gradient(135deg,#ecf2fc,#dce8f8)'})[key]||'linear-gradient(135deg,#f4f6fa,#e9edf5)';
+  return ({youtube:'linear-gradient(135deg,#fdecec,#fbdcdc)',instagram:'linear-gradient(135deg,#fceaf5,#f6d8ec)',threads:'linear-gradient(135deg,#ecf5f5,#dcecec)','naver-blog':'linear-gradient(135deg,#eafaf0,#d8f0e2)',blogger:'linear-gradient(135deg,#fdf3e6,#f8e6cc)'})[key]||'linear-gradient(135deg,#f4f6fa,#e9edf5)';
 }
-function chBorder(key){ return ({youtube:'#f0b8b8',instagram:'#eab8d8',threads:'#b8d8d8','naver-blog':'#a8dcbe',blogger:'#ecca9e',linkedin:'#b8cef0'})[key]||'#dfe4ec'; }
+function chBorder(key){ return ({youtube:'#f0b8b8',instagram:'#eab8d8',threads:'#b8d8d8','naver-blog':'#a8dcbe',blogger:'#ecca9e'})[key]||'#dfe4ec'; }
 function channelLinksPanel(client){
   const links=client.channelLinks||[];
   if(!links.length) return '';
